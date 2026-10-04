@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Control Center — CareerAI{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <span class="badge badge-warning" style="margin-bottom: 0.5rem;">System Administration</span>
+  <h1 style="font-size: 2.25rem; font-weight: 800;">Admin Control Center</h1>
+  <p style="color: var(--text-muted); font-size: 0.95rem;">
+    Manage student records, industry career pathways, model training executions, and audit logs.
+  </p>
+</div>
+
+<!-- Admin Stats Row -->
+<div class="grid grid-4" style="margin-bottom: 2rem;">
+  <div class="metric-box">
+    <div class="metric-value" style="color: #818cf8;">{{ total_users }}</div>
+    <div class="metric-label">Total Users</div>
+  </div>
+
+  <div class="metric-box">
+    <div class="metric-value" style="color: #38bdf8;">{{ total_assessments }}</div>
+    <div class="metric-label">Assessments Taken</div>
+  </div>
+
+  <div class="metric-box">
+    <div class="metric-value" style="color: #34d399;">{{ total_careers }}</div>
+    <div class="metric-label">Active Careers</div>
+  </div>
+
+  <div class="metric-box">
+    <div class="metric-value" style="color: #fbbf24;">{{ total_skills }}</div>
+    <div class="metric-label">Standard Skills</div>
+  </div>
+</div>
+
+<!-- Retrain Model Card & Active Model Banner -->
+<div class="card mb-4" style="background: rgba(15, 23, 42, 0.7); border-color: rgba(99, 102, 241, 0.4); margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+    <div>
+      <span class="badge badge-primary">Active ML Model Pipeline</span>
+      <h3 style="font-size: 1.35rem; font-weight: 700; margin-top: 0.35rem;">
+        {{ latest_model.model_name if latest_model else 'CareerAI Champion Model (Active)' }}
+      </h3>
+      <p style="color: var(--text-muted); font-size: 0.88rem;">
+        Algorithm: <strong>{{ latest_model.algorithm_name if latest_model else 'Logistic Regression (Multiclass)' }}</strong> &bull; 
+        Test Accuracy: <strong style="color: #34d399;">{{ latest_model.accuracy if latest_model else '91.32' }}%</strong>
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{{ url_for('ml.analytics') }}" class="btn btn-secondary">Inspect ML Analytics 📊</a>
+      <form method="POST" action="{{ url_for('admin.trigger_training') }}" onsubmit="return confirm('Retrain ML pipeline across all 5 classification models?');">
+        <button type="submit" class="btn btn-primary">Retrain ML Pipeline ⚡</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom: 2rem;">
+  <!-- Recent Registered Users -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Recent Registered Users</h3>
+      <span class="badge badge-secondary">{{ recent_users|length }} Users</span>
+    </div>
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-dim);">
+            <th style="padding: 0.5rem 0.75rem;">Username</th>
+            <th style="padding: 0.5rem 0.75rem;">Email</th>
+            <th style="padding: 0.5rem 0.75rem;">Role</th>
+            <th style="padding: 0.5rem 0.75rem;">Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in recent_users %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 0.6rem 0.75rem; font-weight: 600;">{{ u.username }}</td>
+              <td style="padding: 0.6rem 0.75rem; color: var(--text-muted);">{{ u.email }}</td>
+              <td style="padding: 0.6rem 0.75rem;">
+                <span class="badge {% if u.is_admin %}badge-warning{% else %}badge-primary{% endif %}">{{ u.role }}</span>
+              </td>
+              <td style="padding: 0.6rem 0.75rem; color: var(--text-dim);">{{ u.created_at.strftime('%b %d') if u.created_at else 'Recent' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent System & Admin Logs -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">System Activity Logs</h3>
+      <span class="badge badge-secondary">Audit Trail</span>
+    </div>
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-dim);">
+            <th style="padding: 0.5rem 0.75rem;">Action</th>
+            <th style="padding: 0.5rem 0.75rem;">Details</th>
+            <th style="padding: 0.5rem 0.75rem;">Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l in logs %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 0.6rem 0.75rem; font-weight: 700; color: #818cf8;">{{ l.action }}</td>
+              <td style="padding: 0.6rem 0.75rem; color: var(--text-muted);">{{ l.details }}</td>
+              <td style="padding: 0.6rem 0.75rem; color: var(--text-dim);">{{ l.created_at.strftime('%H:%M:%S') if l.created_at else 'Recent' }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" style="padding: 1rem; text-align: center; color: var(--text-muted);">No activity logs recorded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Careers & Skills — Admin — CareerAI{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <a href="{{ url_for('admin.dashboard') }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0.75rem;">
+    ← Back to Admin Dashboard
+  </a>
+  <h1 style="font-size: 2.25rem; font-weight: 800;">Career & Skill Management</h1>
+  <p style="color: var(--text-muted); font-size: 0.95rem;">
+    Add new career profiles, configure skill requirement thresholds, and inspect taxonomy.
+  </p>
+</div>
+
+<div class="grid grid-3" style="align-items: flex-start; margin-bottom: 3rem;">
+  <!-- Create New Career Form (Left 1 col) -->
+  <div class="card">
+    <h3 class="card-title" style="margin-bottom: 1rem;">Add New Career Role</h3>
+    <form method="POST" action="{{ url_for('admin.careers') }}">
+      <div class="form-group">
+        <label class="form-label">Role Title *</label>
+        <input type="text" name="title" class="form-control" placeholder="e.g. MLOps Engineer" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Unique Code *</label>
+        <input type="text" name="code" class="form-control" placeholder="e.g. MLOPS_ENG" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-control">
+          <option value="AI & Data Science">AI & Data Science</option>
+          <option value="Software Engineering">Software Engineering</option>
+          <option value="Cloud & Systems">Cloud & Systems</option>
+          <option value="Security & Infrastructure">Security & Infrastructure</option>
+          <option value="Web Engineering">Web Engineering</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea name="description" rows="3" class="form-control" placeholder="Comprehensive role summary..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Average Salary</label>
+        <input type="text" name="average_salary_range" class="form-control" value="₹8 - 18 LPA">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Create Career</button>
+    </form>
+  </div>
+
+  <!-- Existing Careers List (Right 2 cols) -->
+  <div style="grid-column: span 2;" class="card">
+    <div class="card-header">
+      <h3 class="card-title">Existing Career Taxonomy</h3>
+      <span class="badge badge-primary">{{ careers|length }} Careers Configured</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-dim);">
+            <th style="padding: 0.6rem 0.75rem;">Code</th>
+            <th style="padding: 0.6rem 0.75rem;">Title</th>
+            <th style="padding: 0.6rem 0.75rem;">Category</th>
+            <th style="padding: 0.6rem 0.75rem;">Difficulty</th>
+            <th style="padding: 0.6rem 0.75rem; text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in careers %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 0.6rem 0.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #818cf8;">{{ c.code }}</td>
+              <td style="padding: 0.6rem 0.75rem; font-weight: 700;">{{ c.title }}</td>
+              <td style="padding: 0.6rem 0.75rem; color: var(--text-muted);">{{ c.category }}</td>
+              <td style="padding: 0.6rem 0.75rem;">
+                <span class="badge badge-secondary">{{ c.difficulty }}</span>
+              </td>
+              <td style="padding: 0.6rem 0.75rem; text-align: right;">
+                <a href="{{ url_for('career.detail', id=c.id) }}" class="btn btn-secondary btn-sm">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

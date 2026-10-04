@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}CareerAI — Intelligent Career Path Recommendation & Skill Gap Analysis{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div class="hero-pill">
+    <span>⚡ Powered by Real Supervised Machine Learning</span>
+  </div>
+  <h1 class="hero-title">
+    Discover Your Ideal Tech Career with <span class="gradient-text">Explainable AI</span>
+  </h1>
+  <p class="hero-desc">
+    CareerAI analyzes your academic background, technical proficiencies, problem-solving skills, and project experience to recommend optimal career paths, reveal critical skill gaps, and generate customized roadmaps.
+  </p>
+  <div class="hero-buttons">
+    {% if g.user %}
+      <a href="{{ url_for('assessment.wizard') }}" class="btn btn-primary btn-lg">Start Assessment →</a>
+      <a href="{{ url_for('student.dashboard') }}" class="btn btn-secondary btn-lg">Go to Dashboard</a>
+    {% else %}
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Get Started Free →</a>
+      <a href="{{ url_for('career.explorer') }}" class="btn btn-secondary btn-lg">Explore Tech Careers</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- System Highlights Grid -->
+<div class="grid grid-3" style="margin-bottom: 3.5rem;">
+  <div class="card card-hover">
+    <div style="font-size: 2rem; margin-bottom: 0.75rem;">🧠</div>
+    <h3 class="card-title">Authentic ML Models</h3>
+    <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 0.5rem;">
+      No hardcoded rules. Trains and compares 5 diverse algorithms (Logistic Regression, Decision Trees, Random Forests, KNN, and Gradient Boosting) to select the champion model.
+    </p>
+  </div>
+
+  <div class="card card-hover">
+    <div style="font-size: 2rem; margin-bottom: 0.75rem;">🔍</div>
+    <h3 class="card-title">Explainable AI (XAI)</h3>
+    <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 0.5rem;">
+      Understand the exact mathematical drivers behind recommendations. Identifies positive proficiency drivers and limiting skill areas with natural language summaries.
+    </p>
+  </div>
+
+  <div class="card card-hover">
+    <div style="font-size: 2rem; margin-bottom: 0.75rem;">🎯</div>
+    <h3 class="card-title">Skill Gap Analysis</h3>
+    <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 0.5rem;">
+      Compares your competencies against real database requirements for 12+ tech industry roles, categorizing skills into matched, weak, and critical priority gaps.
+    </p>
+  </div>
+
+  <div class="card card-hover">
+    <div style="font-size: 2rem; margin-bottom: 0.75rem;">🗺️</div>
+    <h3 class="card-title">Personalized Roadmaps</h3>
+    <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 0.5rem;">
+      Dynamic 6-phase curriculum tailored specifically to your missing competencies, target role, and practical experience level.
+    </p>
+  </div>
+
+  <div class="card card-hover">
+    <div style="font-size: 2rem; margin-bottom: 0.75rem;">🎛️</div>
+    <h3 class="card-title">What-If Career Simulator</h3>
+    <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 0.5rem;">
+      Test future improvements by tweaking skill sliders. Reruns the genuine ML inference pipeline to see real before-vs-after probability shifts.
+    </p>
+  </div>
+
+  <div class="card card-hover">
+    <div style="font-size: 2rem; margin-bottom: 0.75rem;">📄</div>
+    <h3 class="card-title">Local Resume Analysis</h3>
+    <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 0.5rem;">
+      Upload PDF resumes for privacy-first, local text extraction. Identifies extracted skills, projects, and benchmarks compatibility against tech roles.
+    </p>
+  </div>
+</div>
+
+<!-- Featured Careers Section -->
+<div style="margin-bottom: 3.5rem;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+    <div>
+      <h2 style="font-size: 1.85rem; font-weight: 800;">Featured Tech Careers</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">Explorable industry pathways built into the CareerAI intelligence matrix</p>
+    </div>
+    <a href="{{ url_for('career.explorer') }}" class="btn btn-secondary btn-sm">View All 12 Careers →</a>
+  </div>
+
+  <div class="grid grid-3">
+    {% for career in featured_careers %}
+      <div class="card card-hover" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span class="badge badge-primary">{{ career.category }}</span>
+            <span class="badge badge-warning">{{ career.difficulty }}</span>
+          </div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">{{ career.title }}</h3>
+          <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 1rem;">
+            {{ career.description[:130] }}...
+          </p>
+        </div>
+
+        <div>
+          <div style="font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1rem;">
+            <div>💰 <strong>Avg Salary:</strong> {{ career.average_salary_range }}</div>
+            <div>📈 <strong>Outlook:</strong> {{ career.outlook }}</div>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <a href="{{ url_for('career.detail', id=career.id) }}" class="btn btn-secondary btn-sm" style="flex: 1;">View Details</a>
+            {% if g.user %}
+              <a href="{{ url_for('career.skill_gap', id=career.id) }}" class="btn btn-primary btn-sm">Analyze Gaps</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Evaluation & Authenticity Highlight -->
+<div class="card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(6, 182, 212, 0.08)); border-color: rgba(99, 102, 241, 0.3); text-align: center; padding: 3rem 2rem;">
+  <span class="badge badge-success" style="margin-bottom: 1rem;">B.Tech CSE (AI & ML) Standards</span>
+  <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1rem;">Rigorous Academic & Technical Grounding</h2>
+  <p style="color: var(--text-muted); max-width: 750px; margin: 0 auto 2rem; font-size: 1rem; line-height: 1.7;">
+    CareerAI is architected as an academic-grade machine learning system. It incorporates standard data preprocessing, stratified cross-validation, multi-class evaluation metrics (Accuracy, Precision, Recall, F1), and model explainability without relying on third-party generative AI wrappers.
+  </p>
+  <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+    <a href="{{ url_for('ml.analytics') }}" class="btn btn-secondary">Inspect ML Model Analytics →</a>
+    {% if not g.user %}
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Create Student Account</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Career Explorer — CareerAI{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <h1 style="font-size: 2.25rem; font-weight: 800;">Tech Career Library</h1>
+  <p style="color: var(--text-muted); font-size: 0.95rem;">
+    Explore 12 standardized technology occupation pathways, skills matrices, salary benchmarks, and career outlooks.
+  </p>
+</div>
+
+<!-- Search & Category Filters -->
+<div class="card mb-4" style="padding: 1.25rem; margin-bottom: 2rem;">
+  <form method="GET" action="{{ url_for('career.explorer') }}" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <input type="text" name="search" class="form-control" placeholder="Search by role title, description, or keyword..." value="{{ search_query }}" style="flex: 2; min-width: 260px;">
+    
+    <select name="category" class="form-control" style="flex: 1; min-width: 200px;" onchange="this.form.submit()">
+      {% for cat in categories %}
+        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-primary">Filter Careers</button>
+    {% if selected_category != 'All' or search_query %}
+      <a href="{{ url_for('career.explorer') }}" class="btn btn-secondary">Reset</a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Careers Grid -->
+<div class="grid grid-3">
+  {% for career in careers %}
+    <div class="card card-hover" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <span class="badge badge-primary">{{ career.category }}</span>
+          <span class="badge {% if career.difficulty == 'Advanced' or career.difficulty == 'Very Advanced' %}badge-danger{% elif career.difficulty == 'Intermediate' %}badge-warning{% else %}badge-success{% endif %}">
+            {{ career.difficulty }}
+          </span>
+        </div>
+
+        <h3 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem;">{{ career.title }}</h3>
+        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 1.25rem;">
+          {{ career.description[:140] }}...
+        </p>
+
+        <div style="background: rgba(15, 23, 42, 0.5); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1.25rem;">
+          <div>💰 <strong>Avg Salary:</strong> {{ career.average_salary_range }}</div>
+          <div style="margin-top: 0.25rem;">📈 <strong>Outlook:</strong> {{ career.outlook }}</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="{{ url_for('career.detail', id=career.id) }}" class="btn btn-secondary btn-sm" style="flex: 1;">Details</a>
+        {% if g.user %}
+          <a href="{{ url_for('career.skill_gap', id=career.id) }}" class="btn btn-primary btn-sm">Skill Gap</a>
+          <a href="{{ url_for('career.target_career', career_id=career.id) }}" class="btn btn-outline btn-sm">Target Mode</a>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+      <p style="color: var(--text-muted);">No careers found matching your search criteria.</p>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

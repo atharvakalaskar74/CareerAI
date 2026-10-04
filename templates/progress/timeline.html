@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Progress Tracking — CareerAI{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <span class="badge badge-primary" style="margin-bottom: 0.5rem;">Longitudinal Analytics</span>
+  <h1 style="font-size: 2.25rem; font-weight: 800;">Career Readiness Evolution</h1>
+  <p style="color: var(--text-muted); font-size: 0.95rem;">
+    Track how your career readiness indicators and target compatibility scores evolve across periodic assessments.
+  </p>
+</div>
+
+{% if records %}
+  <!-- Progress Chart -->
+  <div class="card mb-4" style="margin-bottom: 2rem;">
+    <div class="card-header">
+      <h3 class="card-title">Score Progression Over Time</h3>
+      <span class="badge badge-success">Chart.js Telemetry</span>
+    </div>
+    <div style="height: 320px; position: relative;">
+      <canvas id="progressChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Historical Assessments Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Historical Assessment Log</h3>
+      <a href="{{ url_for('assessment.wizard') }}" class="btn btn-primary btn-sm">Take New Assessment +</a>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.92rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-dim);">
+            <th style="padding: 0.75rem 1rem;">Date</th>
+            <th style="padding: 0.75rem 1rem;">Top Predicted Career</th>
+            <th style="padding: 0.75rem 1rem;">Model Compatibility</th>
+            <th style="padding: 0.75rem 1rem;">Readiness Index</th>
+            <th style="padding: 0.75rem 1rem; text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 0.85rem 1rem; color: var(--text-muted);">{{ r.recorded_at.strftime('%b %d, %Y') }}</td>
+              <td style="padding: 0.85rem 1rem; font-weight: 700; color: var(--text-main);">{{ r.top_career_title }}</td>
+              <td style="padding: 0.85rem 1rem;">
+                <span class="badge badge-primary">{{ r.top_compatibility }}%</span>
+              </td>
+              <td style="padding: 0.85rem 1rem;">
+                <span class="badge badge-success">{{ r.career_readiness_score }}%</span>
+              </td>
+              <td style="padding: 0.85rem 1rem; text-align: right;">
+                {% if r.assessment_id %}
+                  <a href="{{ url_for('assessment.view_results', id=r.assessment_id) }}" class="btn btn-secondary btn-sm">View Report</a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% else %}
+  <div class="card" style="text-align: center; padding: 4rem 2rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">📈</div>
+    <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">No History Available</h2>
+    <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 1.5rem;">
+      Your progress timeline will populate automatically as you complete assessments and monitor skill improvements over time.
+    </p>
+    <a href="{{ url_for('assessment.wizard') }}" class="btn btn-primary">Take Your First Assessment →</a>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if records %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const dates = {{ chart_dates|tojson }};
+    const readiness = {{ chart_readiness|tojson }};
+    const compat = {{ chart_compat|tojson }};
+
+    const ctx = document.getElementById("progressChart");
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'Career Readiness Index (%)',
+              data: readiness,
+              borderColor: '#818cf8',
+              backgroundColor: 'rgba(129, 140, 248, 0.15)',
+              tension: 0.3,
+              fill: true,
+              pointRadius: 5
+            },
+            {
+              label: 'Top Model Compatibility (%)',
+              data: compat,
+              borderColor: '#38bdf8',
+              backgroundColor: 'transparent',
+              borderDash: [5, 5],
+              tension: 0.3,
+              pointRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8' }
+            },
+            y: {
+              min: 0,
+              max: 100,
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8' }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#f8fafc' }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

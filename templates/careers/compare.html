@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Career Comparison — CareerAI{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <h1 style="font-size: 2.25rem; font-weight: 800;">Side-by-Side Career Comparison</h1>
+  <p style="color: var(--text-muted); font-size: 0.95rem;">
+    Compare up to 3 technology career paths across required competencies, match ratings, salary ranges, and curricula.
+  </p>
+</div>
+
+<!-- Career Selection Form -->
+<div class="card mb-4" style="padding: 1.25rem; margin-bottom: 2rem;">
+  <form method="POST" action="{{ url_for('career.compare') }}" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 200px;">
+      <label class="form-label">Role #1</label>
+      <select name="career_ids" class="form-control">
+        {% for c in all_careers %}
+          <option value="{{ c.id }}" {% if selected_ids|length > 0 and selected_ids[0] == c.id %}selected{% endif %}>{{ c.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 200px;">
+      <label class="form-label">Role #2</label>
+      <select name="career_ids" class="form-control">
+        {% for c in all_careers %}
+          <option value="{{ c.id }}" {% if selected_ids|length > 1 and selected_ids[1] == c.id %}selected{% endif %}>{{ c.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 200px;">
+      <label class="form-label">Role #3 (Optional)</label>
+      <select name="career_ids" class="form-control">
+        <option value="">-- None --</option>
+        {% for c in all_careers %}
+          <option value="{{ c.id }}" {% if selected_ids|length > 2 and selected_ids[2] == c.id %}selected{% endif %}>{{ c.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="height: 44px;">Compare Roles 📊</button>
+  </form>
+</div>
+
+{% if comparison %}
+  <!-- Radar Chart Comparison -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+      <h3 class="card-title">Multidimensional Skill Alignment Radar</h3>
+      <span class="badge badge-primary">Chart.js Radar Matrix</span>
+    </div>
+    <div style="max-width: 650px; margin: 0 auto; padding: 1rem 0;">
+      <canvas id="comparisonRadarChart" style="max-height: 420px;"></canvas>
+    </div>
+  </div>
+
+  <!-- Comparative Cards Grid -->
+  <div class="grid grid-{{ comparison.careers|length }}" style="margin-bottom: 2rem;">
+    {% for item in comparison.careers %}
+      <div class="card">
+        <div style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+          <span class="badge badge-primary">{{ item.career.category }}</span>
+          <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0.5rem 0;">{{ item.career.title }}</h2>
+          <div style="font-size: 2rem; font-weight: 800; color: #818cf8;">{{ item.match_percentage }}%</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Student Match Percentage</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.9rem; margin-bottom: 1.5rem;">
+          <div>💰 <strong>Salary:</strong> {{ item.career.average_salary_range }}</div>
+          <div>📈 <strong>Outlook:</strong> {{ item.career.outlook }}</div>
+          <div>📊 <strong>Difficulty:</strong> {{ item.career.difficulty }}</div>
+          <div>🎓 <strong>Degree:</strong> {{ item.career.required_qualification }}</div>
+          <div>✅ <strong>Matched Skills:</strong> {{ item.matched_count }} skills</div>
+          <div>⚠️ <strong>Weak Skills:</strong> {{ item.weak_count }} skills</div>
+          <div>❌ <strong>Critical Gaps:</strong> {{ item.missing_count }} skills</div>
+        </div>
+
+        {% if item.missing_skills %}
+          <div style="margin-bottom: 1.5rem;">
+            <strong style="font-size: 0.85rem; color: #f87171; display: block; margin-bottom: 0.5rem;">Top Priority Gaps:</strong>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+              {% for sk in item.missing_skills %}
+                <span class="badge badge-danger" style="text-transform: none;">{{ sk }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 0.5rem;">
+          <a href="{{ url_for('career.detail', id=item.career.id) }}" class="btn btn-secondary btn-sm" style="flex: 1;">Details</a>
+          {% if g.user %}
+            <a href="{{ url_for('career.skill_gap', id=item.career.id) }}" class="btn btn-primary btn-sm" style="flex: 1;">Skill Gaps</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if comparison %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const radarData = {{ comparison.radar_chart|tojson }};
+    const ctx = document.getElementById("comparisonRadarChart");
+    if (ctx && radarData) {
+      new Chart(ctx, {
+        type: 'radar',
+        data: radarData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+              grid: { color: 'rgba(255, 255, 255, 0.08)' },
+              pointLabels: { color: '#94a3b8', font: { size: 12, family: "'Plus Jakarta Sans', sans-serif" } },
+              ticks: { color: '#64748b', backdropColor: 'transparent', min: 0, max: 10, stepSize: 2 }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: '#f8fafc', font: { family: "'Plus Jakarta Sans', sans-serif" } }
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

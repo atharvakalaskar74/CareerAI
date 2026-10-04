@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard — CareerAI{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h1 style="font-size: 2rem; font-weight: 800;">Student Intelligence Hub</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+      Welcome back, <strong>{{ profile.full_name or user.username }}</strong> &bull; {{ profile.degree or 'B.Tech Student' }}
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="{{ url_for('assessment.wizard') }}" class="btn btn-primary">Take Assessment →</a>
+    <a href="{{ url_for('simulation.simulator') }}" class="btn btn-secondary">What-If Simulator</a>
+  </div>
+</div>
+
+<!-- Indicator Metrics Row -->
+<div class="grid grid-4" style="margin-bottom: 2rem;">
+  <div class="metric-box">
+    <div class="metric-value" style="color: #818cf8;">
+      {{ assessment.career_readiness_score|round(1) if assessment else '--' }}%
+    </div>
+    <div class="metric-label">Career Readiness Index</div>
+    {% if assessment %}
+      <div class="progress-container"><div class="progress-bar" style="width: {{ assessment.career_readiness_score }}%;"></div></div>
+    {% endif %}
+  </div>
+
+  <div class="metric-box">
+    <div class="metric-value" style="color: #38bdf8;">
+      {{ assessment.technical_score|round(1) if assessment else '--' }}%
+    </div>
+    <div class="metric-label">Technical Proficiency</div>
+    {% if assessment %}
+      <div class="progress-container"><div class="progress-bar" style="width: {{ assessment.technical_score }}%; background: #38bdf8;"></div></div>
+    {% endif %}
+  </div>
+
+  <div class="metric-box">
+    <div class="metric-value" style="color: #34d399;">
+      {{ assessment.problem_solving_score|round(1) if assessment else '--' }}%
+    </div>
+    <div class="metric-label">Problem Solving Score</div>
+    {% if assessment %}
+      <div class="progress-container"><div class="progress-bar" style="width: {{ assessment.problem_solving_score }}%; background: #34d399;"></div></div>
+    {% endif %}
+  </div>
+
+  <div class="metric-box">
+    <div class="metric-value" style="color: #fbbf24;">
+      {{ prediction.compatibility_score|round(1) if prediction else '--' }}%
+    </div>
+    <div class="metric-label">Top Model Compatibility</div>
+    {% if prediction %}
+      <div class="progress-container"><div class="progress-bar" style="width: {{ prediction.compatibility_score }}%; background: #fbbf24;"></div></div>
+    {% endif %}
+  </div>
+</div>
+
+{% if prediction and assessment %}
+  <!-- Active Prediction Banner -->
+  <div class="card mb-4" style="border-color: rgba(99, 102, 241, 0.4); background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(6, 182, 212, 0.06)); margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+      <div>
+        <span class="badge badge-primary">Model Predicted Best Career Match</span>
+        <h2 style="font-size: 2rem; font-weight: 800; margin: 0.5rem 0;">{{ prediction.top_career.title }}</h2>
+        <p style="color: var(--text-muted); max-width: 600px; font-size: 0.95rem; line-height: 1.6;">
+          {{ prediction.top_career.description[:180] }}...
+        </p>
+      </div>
+
+      <div style="text-align: right; min-width: 200px;">
+        <div style="font-size: 2.75rem; font-weight: 800; color: #818cf8; line-height: 1;">
+          {{ prediction.compatibility_score|round(1) }}%
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-top: 0.25rem;">
+          Compatibility Rating &bull; {{ prediction.confidence_score|round(1) }}% Confidence
+        </div>
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.25rem;">
+          <a href="{{ url_for('assessment.view_results', id=assessment.id) }}" class="btn btn-primary btn-sm">Full Report & XAI →</a>
+          <a href="{{ url_for('career.skill_gap', id=prediction.top_career_id) }}" class="btn btn-secondary btn-sm">Skill Gaps</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Career Matches and Quick Actions Grid -->
+  <div class="grid grid-2" style="margin-bottom: 2rem;">
+    <!-- Top 5 Ranked Careers -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Top 5 ML Career Recommendations</h3>
+        <span class="badge badge-success">Evaluated by Model</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.9rem;">
+        {% for pred in prediction.get_top_predictions() %}
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.92rem; font-weight: 600; margin-bottom: 0.25rem;">
+              <span>{{ pred.career_title }}</span>
+              <span style="color: #818cf8;">{{ pred.compatibility_score }}%</span>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar" style="width: {{ pred.compatibility_score }}%;"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Active Roadmap Snapshot -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Personalized Roadmap</h3>
+        <span class="badge badge-primary">Target: {{ prediction.top_career.title }}</span>
+      </div>
+      {% if roadmap %}
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+          Your <strong>{{ roadmap.target_completion_months }}-month dynamic plan</strong> structured across 6 phases.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+          {% for item in roadmap.items[:3] %}
+            <div style="background: rgba(15, 23, 42, 0.5); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="font-size: 0.88rem; color: var(--text-main);">Phase {{ item.phase_number }}: {{ item.phase_name }}</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ item.title }}</div>
+              </div>
+              <span class="badge badge-secondary">{{ item.estimated_weeks }} wks</span>
+            </div>
+          {% endfor %}
+        </div>
+        <div style="margin-top: 1.25rem;">
+          <a href="{{ url_for('career.view_roadmap', career_id=prediction.top_career_id) }}" class="btn btn-secondary btn-sm" style="width: 100%;">View Complete 6-Phase Roadmap →</a>
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Generating roadmap...</p>
+      {% endif %}
+    </div>
+  </div>
+
+{% else %}
+  <!-- Empty State -->
+  <div class="card" style="text-align: center; padding: 4rem 2rem; margin-bottom: 2rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">🚀</div>
+    <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 0.75rem;">No Assessment Results Yet</h2>
+    <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 2rem; font-size: 0.95rem; line-height: 1.6;">
+      Take our comprehensive multi-factor technical and academic assessment wizard. Our trained Machine Learning model will analyze your profile and recommend high-compatibility career trajectories.
+    </p>
+    <a href="{{ url_for('assessment.wizard') }}" class="btn btn-primary btn-lg">Start Assessment Wizard (7 Steps) →</a>
+  </div>
+{% endif %}
+
+<!-- Quick Features Navigation Cards -->
+<div class="grid grid-4">
+  <a href="{{ url_for('career.explorer') }}" class="card card-hover" style="text-decoration: none; color: inherit;">
+    <div style="font-size: 1.75rem; margin-bottom: 0.5rem;">📚</div>
+    <h4 style="font-size: 1.05rem; font-weight: 700;">Career Explorer</h4>
+    <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 0.25rem;">Explore 12+ tech roles, skills, responsibilities & salaries.</p>
+  </a>
+
+  <a href="{{ url_for('simulation.simulator') }}" class="card card-hover" style="text-decoration: none; color: inherit;">
+    <div style="font-size: 1.75rem; margin-bottom: 0.5rem;">🎛️</div>
+    <h4 style="font-size: 1.05rem; font-weight: 700;">What-If Simulator</h4>
+    <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 0.25rem;">Simulate skill improvements with live ML recalculation.</p>
+  </a>
+
+  <a href="{{ url_for('resume.view_resume_page') }}" class="card card-hover" style="text-decoration: none; color: inherit;">
+    <div style="font-size: 1.75rem; margin-bottom: 0.5rem;">📄</div>
+    <h4 style="font-size: 1.05rem; font-weight: 700;">Resume Analyzer</h4>
+    <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 0.25rem;">Extract skills from PDF resume and benchmark fit.</p>
+  </a>
+
+  <a href="{{ url_for('student.progress') }}" class="card card-hover" style="text-decoration: none; color: inherit;">
+    <div style="font-size: 1.75rem; margin-bottom: 0.5rem;">📈</div>
+    <h4 style="font-size: 1.05rem; font-weight: 700;">Progress Tracker</h4>
+    <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 0.25rem;">Monitor career readiness evolution across attempts.</p>
+  </a>
+</div>
+{% endblock %}

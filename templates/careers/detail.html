@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}{{ career.title }} — CareerAI{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <a href="{{ url_for('career.explorer') }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0.75rem;">
+    ← Back to Career Explorer
+  </a>
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+        <span class="badge badge-primary">{{ career.category }}</span>
+        <span class="badge badge-warning">{{ career.difficulty }}</span>
+      </div>
+      <h1 style="font-size: 2.25rem; font-weight: 800;">{{ career.title }}</h1>
+    </div>
+    {% if g.user %}
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('career.skill_gap', id=career.id) }}" class="btn btn-primary">Check My Skill Gap</a>
+        <a href="{{ url_for('career.view_roadmap', career_id=career.id) }}" class="btn btn-secondary">View Roadmap</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid grid-3" style="gap: 1.5rem; margin-bottom: 2rem;">
+  <!-- Main Details (Left 2 cols) -->
+  <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 1.5rem;">
+    <div class="card">
+      <h3 class="card-title">Role Overview</h3>
+      <p style="color: var(--text-main); font-size: 1rem; line-height: 1.7; margin-top: 0.5rem;">
+        {{ career.description }}
+      </p>
+
+      <div style="display: flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); font-size: 0.9rem;">
+        <div>
+          <span style="color: var(--text-dim); display: block; font-size: 0.8rem; font-weight: 600;">AVERAGE SALARY</span>
+          <strong style="color: #34d399;">{{ career.average_salary_range }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-dim); display: block; font-size: 0.8rem; font-weight: 600;">MARKET OUTLOOK</span>
+          <strong style="color: #818cf8;">{{ career.outlook }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-dim); display: block; font-size: 0.8rem; font-weight: 600;">EXPERIENCE LEVEL</span>
+          <strong style="color: var(--text-main);">{{ career.experience_level }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Key Responsibilities -->
+    <div class="card">
+      <h3 class="card-title">Core Responsibilities</h3>
+      <div style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.92rem; line-height: 1.8;">
+        {% for resp in career.responsibilities.split('\n') %}
+          {% if resp.strip() %}
+            <div style="margin-bottom: 0.5rem;">{{ resp }}</div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Suggested Portfolio Projects -->
+    <div class="card">
+      <h3 class="card-title">Recommended Capstone Projects</h3>
+      <div style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.92rem; line-height: 1.8;">
+        {% for proj in career.project_suggestions.split('\n') %}
+          {% if proj.strip() %}
+            <div style="background: rgba(15, 23, 42, 0.5); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+              <span style="color: #38bdf8;">📦</span>
+              <span>{{ proj }}</span>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Required Skills Matrix (Right col) -->
+  <div>
+    <div class="card">
+      <h3 class="card-title" style="margin-bottom: 1rem;">Required Competencies</h3>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+        Database-defined industry skill expectations for {{ career.title }}.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for req in skills %}
+          <div style="background: rgba(15, 23, 42, 0.6); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <strong style="font-size: 0.9rem;">{{ req.skill.name }}</strong>
+              <span class="badge {% if req.importance == 'critical' %}badge-danger{% elif req.importance == 'high' %}badge-warning{% else %}badge-secondary{% endif %}">
+                {{ req.importance }}
+              </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+              <span>Required: <strong>{{ req.required_level }}/10</strong></span>
+              {% if student_gap %}
+                {% set s_lvl = student_gap.matched_skills + student_gap.weak_skills + student_gap.missing_skills %}
+                {% for item in s_lvl if item.skill_id == req.skill_id %}
+                  <span>Your Level: <strong style="color: #818cf8;">{{ item.student_level }}/10</strong></span>
+                {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

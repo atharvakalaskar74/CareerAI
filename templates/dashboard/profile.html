@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Student Profile — CareerAI{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 1rem auto;">
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+      <div>
+        <h1 style="font-size: 1.75rem; font-weight: 800;">Academic & Career Profile</h1>
+        <p style="color: var(--text-muted); font-size: 0.88rem;">Manage your background information and working preferences</p>
+      </div>
+      <span class="badge badge-primary">{{ user.role|upper }}</span>
+    </div>
+
+    <form method="POST" action="{{ url_for('student.profile') }}">
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: #818cf8; margin-bottom: 1rem;">Personal & Academic Background</h3>
+      
+      <div class="grid grid-2" style="gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label" for="full_name">Full Name</label>
+          <input type="text" id="full_name" name="full_name" class="form-control" value="{{ profile.full_name or '' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone / WhatsApp</label>
+          <input type="text" id="phone" name="phone" class="form-control" value="{{ profile.phone or '' }}" placeholder="+91 98765 43210">
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label" for="college">College / University</label>
+          <input type="text" id="college" name="college" class="form-control" value="{{ profile.college or '' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="degree">Degree</label>
+          <input type="text" id="degree" name="degree" class="form-control" value="{{ profile.degree or '' }}">
+        </div>
+      </div>
+
+      <div class="grid grid-3" style="gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label" for="branch">Specialization / Branch</label>
+          <input type="text" id="branch" name="branch" class="form-control" value="{{ profile.branch or 'Computer Science & Engineering' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="current_year">Current Year</label>
+          <select id="current_year" name="current_year" class="form-control">
+            {% for y in [1, 2, 3, 4] %}
+              <option value="{{ y }}" {% if profile.current_year == y %}selected{% endif %}>Year {{ y }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cgpa">Current CGPA (0 - 10)</label>
+          <input type="number" step="0.01" min="0" max="10" id="cgpa" name="cgpa" class="form-control" value="{{ profile.cgpa or 7.5 }}">
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: #38bdf8; margin: 1.5rem 0 1rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+        Work & Environment Preferences
+      </h3>
+
+      <div class="grid grid-3" style="gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Working Style</label>
+          <select name="work_preference_style" class="form-control">
+            {% for s in ["Technical", "Managerial", "Research", "Creative"] %}
+              <option value="{{ s }}" {% if profile.work_preference_style == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Environment</label>
+          <select name="work_environment" class="form-control">
+            {% for env in ["Remote", "Hybrid", "In-Office"] %}
+              <option value="{{ env }}" {% if profile.work_environment == env %}selected{% endif %}>{{ env }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Organization Type</label>
+          <select name="org_preference" class="form-control">
+            {% for o in ["High-Growth Startup", "Enterprise Product Corp", "R&D Lab", "Consulting"] %}
+              <option value="{{ o }}" {% if profile.org_preference == o %}selected{% endif %}>{{ o }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="bio">Professional Summary / Bio</label>
+        <textarea id="bio" name="bio" rows="3" class="form-control" placeholder="Brief statement about your technical interests, notable projects, and career aspirations...">{{ profile.bio or '' }}</textarea>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+        <a href="{{ url_for('student.dashboard') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

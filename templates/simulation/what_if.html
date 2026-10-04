@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}What-If Career Simulator — CareerAI{% endblock %}
+
+{% block extra_css %}
+<style>
+  .sim-delta {
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .text-success { color: #34d399; }
+  .text-danger { color: #f87171; }
+  .text-muted { color: var(--text-muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <span class="badge badge-warning" style="margin-bottom: 0.5rem;">Interactive Machine Learning Simulation</span>
+  <h1 style="font-size: 2.25rem; font-weight: 800;">What-If Career Simulator</h1>
+  <p style="color: var(--text-muted); font-size: 0.95rem;">
+    Adjust your hypothetical skill levels below. Our trained Machine Learning model executes in real-time to compute dynamic BEFORE vs AFTER probability shifts.
+  </p>
+</div>
+
+<div class="grid grid-2" style="gap: 2rem; align-items: flex-start;">
+  <!-- Left Column: Interactive Controls -->
+  <div>
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-header">
+        <h3 class="card-title">Adjust Hypothetical Skills</h3>
+        <button type="button" id="resetSimulationBtn" class="btn btn-secondary btn-sm">Reset to Baseline</button>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">
+        Modify sliders to simulate upgrading your technical and analytical competencies:
+      </p>
+
+      {% set sim_features = [
+        ('python', 'Python Programming', baseline_vector.get('python', 6.0)),
+        ('machine_learning', 'Machine Learning', baseline_vector.get('machine_learning', 5.0)),
+        ('deep_learning', 'Deep Learning & Neural Networks', baseline_vector.get('deep_learning', 3.0)),
+        ('data_analysis', 'Data Analysis & EDA', baseline_vector.get('data_analysis', 6.0)),
+        ('sql', 'SQL Database Querying', baseline_vector.get('sql', 6.0)),
+        ('javascript', 'JavaScript Web Development', baseline_vector.get('javascript', 5.0)),
+        ('html_css', 'HTML5 & CSS3 Design', baseline_vector.get('html_css', 5.0)),
+        ('cloud', 'Cloud Computing (AWS/GCP)', baseline_vector.get('cloud', 4.0)),
+        ('cybersecurity', 'Cybersecurity & Defense', baseline_vector.get('cybersecurity', 4.0)),
+        ('git_github', 'Git & GitHub Version Control', baseline_vector.get('git_github', 6.0)),
+        ('problem_solving', 'Problem Solving & DSA', baseline_vector.get('problem_solving', 6.0)),
+        ('analytical_thinking', 'Analytical & Critical Thinking', baseline_vector.get('analytical_thinking', 6.0)),
+        ('math_level', 'Mathematics Foundation', baseline_vector.get('math_level', 6.0)),
+        ('stats_level', 'Applied Statistics', baseline_vector.get('stats_level', 6.0))
+      ] %}
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for feat, label, val in sim_features %}
+          <div class="skill-slider-card">
+            <div class="skill-slider-header">
+              <span class="skill-name">{{ label }}</span>
+              <div>
+                <span id="diff_{{ feat }}" class="sim-delta text-muted">(0.0)</span>
+                <span id="val_{{ feat }}" class="skill-val-badge">{{ val }}/10</span>
+              </div>
+            </div>
+            <input type="range" min="0" max="10" step="0.5" 
+                   data-feature="{{ feat }}" 
+                   data-baseline="{{ val }}" 
+                   value="{{ val }}" 
+                   class="sim-slider">
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Real-time ML Prediction Differential Shifts -->
+  <div style="position: sticky; top: 80px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h2 style="font-size: 1.35rem; font-weight: 800;">Real-Time ML Output</h2>
+      <span id="simLoading" style="display: none; color: #818cf8; font-size: 0.85rem; font-weight: 600;">⚡ Computing ML Inference...</span>
+    </div>
+
+    <div id="simulatedResultsContainer">
+      <!-- Initial Baseline Render -->
+      <div class="card mb-4" style="border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.08); margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span class="badge badge-primary">Baseline Top Prediction</span>
+            <h2 class="card-title" style="font-size: 1.6rem; margin-top: 0.5rem;">{{ baseline_pred.top_career }}</h2>
+            <p class="card-subtitle">Calculated using trained champion Machine Learning model.</p>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 2.2rem; font-weight: 800; color: #818cf8;">{{ baseline_pred.top_compatibility }}%</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Compatibility Score</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Ranked Career Probability Distribution</h3>
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        {% for s in baseline_pred.top_predictions %}
+          <div class="metric-box" style="text-align: left; padding: 1rem 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <span style="font-weight: 700; font-size: 1rem;">{{ s.career_title }}</span>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Baseline: <strong>{{ s.compatibility_score }}%</strong></span>
+                <span class="badge badge-warning">━ Baseline</span>
+              </div>
+            </div>
+            <div class="progress-container" style="height: 10px;">
+              <div class="progress-bar" style="width: {{ s.compatibility_score }}%;"></div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/simulation.js') }}"></script>
+{% endblock %}

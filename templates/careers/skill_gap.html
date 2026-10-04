@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Skill Gap Analysis: {{ career.title }} — CareerAI{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <a href="{{ url_for('career.detail', id=career.id) }}" style="color: var(--text-muted); text-decoration: none; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0.75rem;">
+    ← Back to {{ career.title }}
+  </a>
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <span class="badge badge-primary">{{ career.category }}</span>
+      <h1 style="font-size: 2.25rem; font-weight: 800;">Skill Gap Analysis &bull; {{ career.title }}</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Database-backed comparison between your current proficiencies and {{ career.title }} industry benchmarks.
+      </p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{{ url_for('career.view_roadmap', career_id=career.id) }}" class="btn btn-primary">Generate Targeted Roadmap 🗺️</a>
+      <a href="{{ url_for('simulation.simulator') }}" class="btn btn-secondary">Simulate Improvements 🎛️</a>
+    </div>
+  </div>
+</div>
+
+<!-- Match Summary Banner -->
+<div class="card mb-4" style="background: rgba(15, 23, 42, 0.7); margin-bottom: 2rem;">
+  <div class="grid grid-4" style="text-align: center;">
+    <div>
+      <div style="font-size: 2.25rem; font-weight: 800; color: #818cf8;">{{ gap_data.match_percentage }}%</div>
+      <div class="metric-label">Competency Match</div>
+    </div>
+    <div>
+      <div style="font-size: 2.25rem; font-weight: 800; color: #34d399;">{{ gap_data.matched_skills|length }}</div>
+      <div class="metric-label">Matched / Strong Skills</div>
+    </div>
+    <div>
+      <div style="font-size: 2.25rem; font-weight: 800; color: #fbbf24;">{{ gap_data.weak_skills|length }}</div>
+      <div class="metric-label">Skills to Polish</div>
+    </div>
+    <div>
+      <div style="font-size: 2.25rem; font-weight: 800; color: #f87171;">{{ gap_data.missing_skills|length }}</div>
+      <div class="metric-label">Critical Priority Gaps</div>
+    </div>
+  </div>
+</div>
+
+<!-- Detailed Gaps Tables -->
+<div style="display: flex; flex-direction: column; gap: 2rem;">
+  
+  <!-- Critical Missing Skills -->
+  {% if gap_data.missing_skills %}
+    <div class="card" style="border-color: rgba(239, 68, 68, 0.3);">
+      <div class="card-header">
+        <h3 class="card-title" style="color: #f87171;">🚨 Critical Skill Gaps (High Priority)</h3>
+        <span class="badge badge-danger">Urgent Action Required</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1rem;">
+        These competencies are below the minimum threshold required for {{ career.title }}. Prioritize these in your learning plan.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for s in gap_data.missing_skills %}
+          <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: var(--radius-sm); padding: 0.85rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <strong style="font-size: 1rem;">{{ s.skill_name }}</strong>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">
+                Importance: <span style="text-transform: capitalize; color: #f87171;">{{ s.importance }}</span> &bull; Gap: -{{ s.gap }} pts
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-size: 0.9rem;">Current: <strong>{{ s.student_level }}/10</strong> &rarr; Target: <strong style="color: #38bdf8;">{{ s.required_level }}/10</strong></span>
+              <span class="badge badge-danger">{{ s.priority }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Moderate Weak Skills -->
+  {% if gap_data.weak_skills %}
+    <div class="card" style="border-color: rgba(245, 158, 11, 0.3);">
+      <div class="card-header">
+        <h3 class="card-title" style="color: #fbbf24;">⚡ Skills to Polish & Refine (Medium Priority)</h3>
+        <span class="badge badge-warning">Within 2 Points of Target</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1rem;">
+        You already possess fundamental exposure here. Minor targeted practice will bring these to full industry standards.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for s in gap_data.weak_skills %}
+          <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-sm); padding: 0.85rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <strong style="font-size: 1rem;">{{ s.skill_name }}</strong>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">
+                Importance: <span style="text-transform: capitalize; color: #fbbf24;">{{ s.importance }}</span> &bull; Gap: -{{ s.gap }} pts
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-size: 0.9rem;">Current: <strong>{{ s.student_level }}/10</strong> &rarr; Target: <strong style="color: #38bdf8;">{{ s.required_level }}/10</strong></span>
+              <span class="badge badge-warning">{{ s.priority }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Strong Matched Skills -->
+  {% if gap_data.matched_skills %}
+    <div class="card" style="border-color: rgba(16, 185, 129, 0.3);">
+      <div class="card-header">
+        <h3 class="card-title" style="color: #34d399;">✅ Matched / Strong Proficiencies</h3>
+        <span class="badge badge-success">Meets Industry Standard</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1rem;">
+        Your evaluated proficiency meets or exceeds the baseline expected for this role.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for s in gap_data.matched_skills %}
+          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-sm); padding: 0.85rem 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <strong style="font-size: 1rem;">{{ s.skill_name }}</strong>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">
+                Importance: <span style="text-transform: capitalize; color: #34d399;">{{ s.importance }}</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-size: 0.9rem;">Current: <strong style="color: #34d399;">{{ s.student_level }}/10</strong> &bull; Required: {{ s.required_level }}/10</span>
+              <span class="badge badge-success">{{ s.priority }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+
+{% block title %}Career Assessment Wizard — CareerAI{% endblock %}
+
+{% block extra_css %}
+<style>
+  .wizard-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .wizard-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #06b6d4);
+    transition: width 0.35s ease;
+  }
+  .wizard-steps-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  .wizard-step-item {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+  }
+  .wizard-step-item.active { color: #818cf8; }
+  .wizard-step-item.completed { color: #34d399; }
+  .pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+  .pill-label {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+  }
+  .pill-label:hover { border-color: rgba(99, 102, 241, 0.4); }
+  .pill-label.pill-selected {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: #6366f1;
+    color: #a5b4fc;
+    box-shadow: 0 0 12px var(--primary-glow);
+  }
+  .pill-label input[type="checkbox"] { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 1rem auto;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <div>
+      <h1 style="font-size: 1.85rem; font-weight: 800;">Career Assessment Assessment</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        Provide authentic responses across academic, technical, and practical dimensions.
+      </p>
+    </div>
+    <span id="wizardStepNumber" class="badge badge-primary">Step 1 of 7</span>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="wizard-progress-bar">
+    <div id="wizardProgressFill" class="wizard-progress-fill" style="width: 0%;"></div>
+  </div>
+
+  <form id="assessmentForm" method="POST" action="{{ url_for('assessment.submit_assessment') }}">
+    
+    <!-- ==================== STEP 1: Academic Background ==================== -->
+    <div id="stepSection1" class="card">
+      <div class="card-header">
+        <h2 class="card-title">Section A &bull; Academic Background</h2>
+        <span class="badge badge-primary">Academic Metrics</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Your foundational education provides context for mathematical and analytical reasoning.
+      </p>
+
+      <div class="grid grid-2" style="gap: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label">Highest Qualification</label>
+          <select name="highest_qualification" class="form-control">
+            <option value="12th / High School">12th / Senior Secondary</option>
+            <option value="Diploma in Engg">Diploma in Engineering</option>
+            <option value="Undergraduate" selected>Undergraduate (B.Tech / B.E / B.Sc)</option>
+            <option value="Postgraduate">Postgraduate (M.Tech / MCA / M.Sc)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Degree</label>
+          <input type="text" name="degree" class="form-control" value="{{ profile.degree or 'B.Tech CSE' }}">
+        </div>
+      </div>
+
+      <div class="grid grid-3" style="gap: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label">Branch / Specialization</label>
+          <input type="text" name="branch" class="form-control" value="{{ profile.branch or 'Computer Science & Engineering' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Current Academic Year</label>
+          <select name="current_year" class="form-control">
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3" selected>3rd Year</option>
+            <option value="4">4th Year (Final)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Current Semester</label>
+          <select name="current_semester" class="form-control">
+            {% for s in range(1, 9) %}
+              <option value="{{ s }}" {% if s == 5 %}selected{% endif %}>Semester {{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-3" style="gap: 1.25rem; margin-top: 0.5rem;">
+        <div class="form-group">
+          <label class="form-label">Cumulative CGPA (0.0 - 10.0)</label>
+          <input type="number" step="0.01" min="0" max="10" id="cgpa" name="cgpa" class="form-control" value="{{ profile.cgpa or 7.8 }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mathematics Foundation (1 - 10)</label>
+          <input type="number" min="1" max="10" name="math_level" class="form-control" value="{{ profile.math_level or 7 }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Statistics & Probability (1 - 10)</label>
+          <input type="number" min="1" max="10" name="stats_level" class="form-control" value="{{ profile.stats_level or 7 }}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">General Academic Performance Standing</label>
+        <select name="academic_performance" class="form-control">
+          <option value="Outstanding (Top 5%)">Outstanding (Top 5% of class)</option>
+          <option value="Excellent (Top 15%)">Excellent (Top 15%)</option>
+          <option value="Good" selected>Good / Consistent</option>
+          <option value="Average">Average</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ==================== STEP 2: Technical Skills ==================== -->
+    <div id="stepSection2" class="card" style="display: none;">
+      <div class="card-header">
+        <h2 class="card-title">Section B &bull; Technical Skills Proficiency</h2>
+        <span class="badge badge-primary">0 - 10 Rating Scale</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Self-assess your hands-on coding and tooling capability (0 = No knowledge, 10 = Production expertise).
+      </p>
+
+      <div class="grid grid-2" style="gap: 1rem;">
+        {% set tech_list = [
+          ('skill_python', 'Python', 7),
+          ('skill_java', 'Java', 6),
+          ('skill_c', 'C', 5),
+          ('skill_cpp', 'C++', 5),
+          ('skill_javascript', 'JavaScript', 6),
+          ('skill_sql', 'SQL Databases', 7),
+          ('skill_html_css', 'HTML / CSS', 7),
+          ('skill_machine_learning', 'Machine Learning', 6),
+          ('skill_deep_learning', 'Deep Learning & Neural Nets', 4),
+          ('skill_data_analysis', 'Data Analysis (Pandas, EDA)', 7),
+          ('skill_cloud', 'Cloud Computing (AWS/Azure/GCP)', 5),
+          ('skill_cybersecurity', 'Cybersecurity & Defense', 4),
+          ('skill_networking', 'Computer Networking & Protocols', 5),
+          ('skill_database', 'Database Design & RDBMS', 6),
+          ('skill_git_github', 'Git & GitHub Version Control', 7)
+        ] %}
+
+        {% for name, label, default_val in tech_list %}
+          <div class="skill-slider-card">
+            <div class="skill-slider-header">
+              <span class="skill-name">{{ label }}</span>
+              <span id="{{ name }}_val" class="skill-val-badge">{{ default_val }}/10</span>
+            </div>
+            <input type="range" min="0" max="10" step="1" name="{{ name }}" class="wizard-slider" value="{{ default_val }}">
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ==================== STEP 3: Soft Skills ==================== -->
+    <div id="stepSection3" class="card" style="display: none;">
+      <div class="card-header">
+        <h2 class="card-title">Section C &bull; Soft Skills & Professional Attributes</h2>
+        <span class="badge badge-primary">0 - 10 Rating Scale</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Modern engineering and data science roles value communication, team collaboration, and analytical rigor.
+      </p>
+
+      <div class="grid grid-2" style="gap: 1rem;">
+        {% set soft_list = [
+          ('soft_communication', 'Technical Communication & Writing', 7),
+          ('soft_leadership', 'Leadership & Ownership', 6),
+          ('soft_teamwork', 'Cross-Functional Teamwork', 8),
+          ('soft_problem_solving', 'Algorithmic Problem Solving & Debugging', 7),
+          ('soft_analytical_thinking', 'Analytical & Critical Thinking', 8),
+          ('soft_creativity', 'Solution Creativity & Design', 7),
+          ('soft_presentation', 'Public Speaking & Demos', 6),
+          ('soft_time_management', 'Time Management & Sprint Discipline', 7)
+        ] %}
+
+        {% for name, label, default_val in soft_list %}
+          <div class="skill-slider-card">
+            <div class="skill-slider-header">
+              <span class="skill-name">{{ label }}</span>
+              <span id="{{ name }}_val" class="skill-val-badge">{{ default_val }}/10</span>
+            </div>
+            <input type="range" min="0" max="10" step="1" name="{{ name }}" class="wizard-slider" value="{{ default_val }}">
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ==================== STEP 4: Interests ==================== -->
+    <div id="stepSection4" class="card" style="display: none;">
+      <div class="card-header">
+        <h2 class="card-title">Section D &bull; Domain & Industry Interests</h2>
+        <span class="badge badge-primary">Multi-Select</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Select the technical domains that genuinely excite and motivate you.
+      </p>
+
+      {% set interest_options = [
+        'Artificial Intelligence', 'Machine Learning', 'Data Science', 'Software Development',
+        'Web Development', 'Mobile Development', 'Cybersecurity', 'Cloud Computing',
+        'DevOps', 'UI/UX', 'Research', 'Business/Management'
+      ] %}
+
+      <div class="pill-group">
+        {% for opt in interest_options %}
+          <label class="pill-label {% if loop.index in [1, 2, 4] %}pill-selected{% endif %}">
+            <input type="checkbox" name="interests" value="{{ opt }}" class="interest-checkbox" {% if loop.index in [1, 2, 4] %}checked{% endif %}>
+            {{ opt }}
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ==================== STEP 5: Experience ==================== -->
+    <div id="stepSection5" class="card" style="display: none;">
+      <div class="card-header">
+        <h2 class="card-title">Section E &bull; Practical Experience & Achievements</h2>
+        <span class="badge badge-primary">Hands-on Work</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Practical projects, hackathons, and certifications indicate career readiness.
+      </p>
+
+      <div class="grid grid-2" style="gap: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label">Completed Technical Projects</label>
+          <select name="projects_count" class="form-control">
+            <option value="0">0 Projects</option>
+            <option value="1">1 Major Project</option>
+            <option value="2" selected>2 - 3 Projects</option>
+            <option value="4">4 - 6 Projects</option>
+            <option value="7">7+ Projects</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Industry Internship Completed?</label>
+          <select name="internship" class="form-control">
+            <option value="no" selected>No, not yet</option>
+            <option value="yes">Yes, completed at least 1 internship</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-3" style="gap: 1.25rem; margin-top: 0.5rem;">
+        <div class="form-group">
+          <label class="form-label">Full-time / Part-time Work Exp?</label>
+          <select name="work_experience" class="form-control">
+            <option value="no" selected>No industry employment</option>
+            <option value="yes">Yes, prior employment</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Hackathons / Competitions Participated</label>
+          <input type="number" min="0" max="20" name="hackathons" class="form-control" value="1">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Verified Certifications Count</label>
+          <input type="number" min="0" max="20" name="certifications_count" class="form-control" value="1">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 0.5rem;">
+        <label class="form-label">Open-Source Contributions</label>
+        <select name="open_source" class="form-control">
+          <option value="no" selected>None yet / Private repositories only</option>
+          <option value="yes">Active open-source contributor</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ==================== STEP 6: Work Preferences ==================== -->
+    <div id="stepSection6" class="card" style="display: none;">
+      <div class="card-header">
+        <h2 class="card-title">Section F &bull; Work Style & Environmental Preferences</h2>
+        <span class="badge badge-primary">Culture & Environment</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        Tell us where and how you prefer to deliver your best work.
+      </p>
+
+      <div class="grid grid-2" style="gap: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label">Primary Career Nature</label>
+          <select name="pref_style" class="form-control">
+            <option value="Technical" selected>Deep Technical / Engineering Specialist</option>
+            <option value="Managerial">Managerial / Tech Lead / Product</option>
+            <option value="Research">Academic Research / Scientific R&D</option>
+            <option value="Creative">Creative / User Experience & Interface</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Workplace Setup</label>
+          <select name="pref_environment" class="form-control">
+            <option value="Remote">100% Fully Remote</option>
+            <option value="Hybrid" selected>Hybrid (2-3 days office)</option>
+            <option value="Office">On-site / In-Office</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-3" style="gap: 1.25rem; margin-top: 0.5rem;">
+        <div class="form-group">
+          <label class="form-label">Company Stage</label>
+          <select name="pref_org" class="form-control">
+            <option value="Startup">Early/Growth Startup</option>
+            <option value="Enterprise" selected>Established Tech Enterprise (MNC)</option>
+            <option value="Research Lab">Research Institute / University Lab</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Risk vs Stability</label>
+          <select name="pref_stability" class="form-control">
+            <option value="Stability">Job Stability & Predictability</option>
+            <option value="Innovation" selected>Cutting-Edge Innovation & Speed</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Collaboration Style</label>
+          <select name="pref_team" class="form-control">
+            <option value="Individual">Individual Contributor (Autonomous)</option>
+            <option value="Team" selected>Cross-functional Collaborative Team</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== STEP 7: Career Preferences & Review ==================== -->
+    <div id="stepSection7" class="card" style="display: none;">
+      <div class="card-header">
+        <h2 class="card-title">Section G &bull; Career Ambitions & Final Review</h2>
+        <span class="badge badge-success">Ready to Evaluate</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+        You can indicate your preferred target career. Please note that the final recommendation will be calculated objectively by our trained Machine Learning classification pipeline based on your mathematical, skill, and academic inputs.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">What is your dream tech career? (Optional Target)</label>
+        <select name="desired_career" class="form-control">
+          <option value="">-- Let ML Model Decide Completely --</option>
+          {% for c in careers %}
+            <option value="{{ c.title }}">{{ c.title }} ({{ c.category }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="card" style="background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.3); padding: 1.25rem; margin-top: 1.5rem;">
+        <h4 style="font-size: 1rem; color: #818cf8; margin-bottom: 0.35rem;">⚡ AI Verification Protocol</h4>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+          Upon submission, your responses are validated, standardized, scaled, and forwarded to the active champion model. The inference engine outputs top probability distributions, SHAP/feature importance attribution, and gap-tailored curriculum milestones.
+        </p>
+      </div>
+    </div>
+
+    <!-- Wizard Navigation Buttons -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+      <button type="button" id="wizardPrevBtn" class="btn btn-secondary" style="display: none;">← Previous Step</button>
+      <div style="margin-left: auto; display: flex; gap: 0.75rem;">
+        <button type="button" id="wizardNextBtn" class="btn btn-primary">Next Step →</button>
+        <button type="submit" id="wizardSubmitBtn" class="btn btn-primary" style="display: none;">Generate AI Career Evaluation ⚡</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/wizard.js') }}"></script>
+{% endblock %}

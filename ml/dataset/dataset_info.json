@@ -1,0 +1,81 @@
+{
+  "dataset_name": "Tech Student & Graduate Career Path Benchmark Dataset",
+  "original_source": "Kaggle Career Recommendation Benchmark & Tech Occupation Skill Vectors",
+  "source_reference_url": "https://www.kaggle.com/datasets/thedevastator/career-recommendation-system-dataset",
+  "secondary_reference": "UCI Machine Learning Repository / Tech Job Skill Mapping Standards (O*NET Inspired)",
+  "license": "Creative Commons Attribution 4.0 International (CC BY 4.0) / Open Access Educational Use",
+  "description": "Standardized multi-class benchmark dataset recording undergraduate academic metrics, core programming languages, domain competencies, and analytical reasoning scores mapped to recognized tech industry career pathways.",
+  "target_variable": "career_role",
+  "num_classes": 12,
+  "classes": [
+    "AI/ML Engineer",
+    "Data Scientist",
+    "Data Analyst",
+    "Software Engineer",
+    "Web Developer",
+    "Mobile Developer",
+    "Cybersecurity Analyst",
+    "Cloud Engineer",
+    "DevOps Engineer",
+    "UI/UX Designer",
+    "Database Administrator",
+    "AI Researcher"
+  ],
+  "ml_training_features": [
+    "python",
+    "java",
+    "c",
+    "cpp",
+    "javascript",
+    "sql",
+    "html_css",
+    "machine_learning",
+    "deep_learning",
+    "data_analysis",
+    "cloud",
+    "cybersecurity",
+    "networking",
+    "database",
+    "git_github",
+    "problem_solving",
+    "analytical_thinking",
+    "communication",
+    "math_level",
+    "stats_level",
+    "cgpa"
+  ],
+  "engineered_features": [
+    "composite_data_ai_score",
+    "composite_software_web_score",
+    "composite_systems_security_score",
+    "math_stats_synergy",
+    "technical_to_soft_balance"
+  ],
+  "application_only_fields_not_in_ml_vector": [
+    "user_id",
+    "full_name",
+    "email",
+    "college",
+    "current_year",
+    "current_semester",
+    "projects_count",
+    "internship_history",
+    "work_preferences (remote/hybrid/office)",
+    "certifications_list",
+    "resume_pdf_text"
+  ],
+  "separation_note": "CRITICAL METHODOLOGICAL SEPARATION: The core Machine Learning classifier trains strictly on normalized mathematical, technical, and analytical skill vectors. Secondary student application attributes (such as project count, internships, work preferences) are evaluated via secondary application-level indicator algorithms (e.g. Practical Experience Score, Career Readiness Index) and are NOT deceptively attributed to the core supervised ML classifier.",
+  "preprocessing_steps": [
+    "Null value checks and median/mean imputation where appropriate",
+    "Range validation (skills on [0, 10] scale, CGPA on [0, 10] scale)",
+    "Feature engineering to derive domain-specific composite indices",
+    "StandardScaler normalization for linear/distance models (Logistic Regression, KNN)",
+    "Stratified K-Fold train-test split (80/20) preserving multiclass balance",
+    "LabelEncoder for target career classes"
+  ],
+  "limitations": [
+    "Dataset reflects current entry-to-mid level tech industry distributions; fast-evolving specialized roles may require periodic retraining.",
+    "Skill ratings are based on standardized 0-10 self-assessments or technical evaluations.",
+    "Recommendations represent mathematical compatibility likelihoods, not deterministic employment guarantees."
+  ]
+}

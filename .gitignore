@@ -1,0 +1,26 @@
+# Environment variables
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Uploads
+uploads/resumes/*.pdf
+!uploads/resumes/.gitkeep
+
+# SQLite database
+instance/
+*.db
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
