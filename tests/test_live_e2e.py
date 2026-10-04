@@ -14,6 +14,17 @@ def run_e2e_verification():
     cj = http.cookiejar.CookieJar()
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 
+    # 0. Health Endpoint Check
+    print("\n[Step 0] Checking Health Endpoint (/health)...")
+    req = urllib.request.Request(f"{BASE_URL}/health")
+    with opener.open(req) as resp:
+        assert resp.status == 200, f"Health endpoint returned status {resp.status}"
+        data = json.loads(resp.read().decode("utf-8"))
+        assert data["status"] == "healthy"
+        assert data["database"] == "connected"
+        assert data["ml_engine"] == "ready"
+        print(f"  -> Health Check Passed: {data['service']} | DB: {data['database']} | ML: {data['ml_engine']}")
+
     # 1. Landing Page
     print("\n[Step 1] Checking Landing Page (/)...\n")
     req = urllib.request.Request(f"{BASE_URL}/")

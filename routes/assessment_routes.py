@@ -18,6 +18,18 @@ def wizard():
     careers = Career.query.filter_by(is_active=1).all()
     return render_template("assessment/wizard.html", profile=profile, skills=skills, careers=careers)
 
+def safe_int(val, default=1):
+    try:
+        return int(float(str(val).strip()))
+    except (ValueError, TypeError):
+        return default
+
+def safe_float(val, default=5.0):
+    try:
+        return float(str(val).strip())
+    except (ValueError, TypeError):
+        return default
+
 @assessment_bp.route("/assessment/submit", methods=["POST"])
 @login_required
 def submit_assessment():
@@ -32,47 +44,47 @@ def submit_assessment():
                     "qualification": form.get("highest_qualification", "12th / High School"),
                     "degree": form.get("degree", "B.Tech"),
                     "branch": form.get("branch", "Computer Science & Engineering"),
-                    "current_year": int(form.get("current_year", 3)),
-                    "current_semester": int(form.get("current_semester", 5)),
-                    "cgpa": float(form.get("cgpa", 7.5)),
-                    "math_level": int(form.get("math_level", 6)),
-                    "stats_level": int(form.get("stats_level", 6)),
+                    "current_year": safe_int(form.get("current_year"), 3),
+                    "current_semester": safe_int(form.get("current_semester"), 5),
+                    "cgpa": safe_float(form.get("cgpa"), 7.5),
+                    "math_level": safe_int(form.get("math_level"), 6),
+                    "stats_level": safe_int(form.get("stats_level"), 6),
                     "academic_performance": form.get("academic_performance", "Good")
                 },
                 "technical_skills": {
-                    "python": float(form.get("skill_python", 5.0)),
-                    "java": float(form.get("skill_java", 5.0)),
-                    "c": float(form.get("skill_c", 4.0)),
-                    "cpp": float(form.get("skill_cpp", 4.0)),
-                    "javascript": float(form.get("skill_javascript", 5.0)),
-                    "sql": float(form.get("skill_sql", 5.0)),
-                    "html_css": float(form.get("skill_html_css", 5.0)),
-                    "machine_learning": float(form.get("skill_machine_learning", 4.0)),
-                    "deep_learning": float(form.get("skill_deep_learning", 3.0)),
-                    "data_analysis": float(form.get("skill_data_analysis", 5.0)),
-                    "cloud": float(form.get("skill_cloud", 4.0)),
-                    "cybersecurity": float(form.get("skill_cybersecurity", 4.0)),
-                    "networking": float(form.get("skill_networking", 4.0)),
-                    "database": float(form.get("skill_database", 5.0)),
-                    "git_github": float(form.get("skill_git_github", 5.0))
+                    "python": safe_float(form.get("skill_python"), 5.0),
+                    "java": safe_float(form.get("skill_java"), 5.0),
+                    "c": safe_float(form.get("skill_c"), 4.0),
+                    "cpp": safe_float(form.get("skill_cpp"), 4.0),
+                    "javascript": safe_float(form.get("skill_javascript"), 5.0),
+                    "sql": safe_float(form.get("skill_sql"), 5.0),
+                    "html_css": safe_float(form.get("skill_html_css"), 5.0),
+                    "machine_learning": safe_float(form.get("skill_machine_learning"), 4.0),
+                    "deep_learning": safe_float(form.get("skill_deep_learning"), 3.0),
+                    "data_analysis": safe_float(form.get("skill_data_analysis"), 5.0),
+                    "cloud": safe_float(form.get("skill_cloud"), 4.0),
+                    "cybersecurity": safe_float(form.get("skill_cybersecurity"), 4.0),
+                    "networking": safe_float(form.get("skill_networking"), 4.0),
+                    "database": safe_float(form.get("skill_database"), 5.0),
+                    "git_github": safe_float(form.get("skill_git_github"), 5.0)
                 },
                 "soft_skills": {
-                    "communication": float(form.get("soft_communication", 6.0)),
-                    "leadership": float(form.get("soft_leadership", 5.0)),
-                    "teamwork": float(form.get("soft_teamwork", 6.0)),
-                    "problem_solving": float(form.get("soft_problem_solving", 6.0)),
-                    "analytical_thinking": float(form.get("soft_analytical_thinking", 6.0)),
-                    "creativity": float(form.get("soft_creativity", 5.0)),
-                    "presentation": float(form.get("soft_presentation", 5.0)),
-                    "time_management": float(form.get("soft_time_management", 6.0))
+                    "communication": safe_float(form.get("soft_communication"), 6.0),
+                    "leadership": safe_float(form.get("soft_leadership"), 5.0),
+                    "teamwork": safe_float(form.get("soft_teamwork"), 6.0),
+                    "problem_solving": safe_float(form.get("soft_problem_solving"), 6.0),
+                    "analytical_thinking": safe_float(form.get("soft_analytical_thinking"), 6.0),
+                    "creativity": safe_float(form.get("soft_creativity"), 5.0),
+                    "presentation": safe_float(form.get("soft_presentation"), 5.0),
+                    "time_management": safe_float(form.get("soft_time_management"), 6.0)
                 },
                 "interests": form.getlist("interests") if hasattr(form, "getlist") else [],
                 "experience": {
-                    "projects_count": int(form.get("projects_count", 2)),
+                    "projects_count": safe_int(form.get("projects_count"), 2),
                     "internship": form.get("internship", "no") == "yes",
                     "work_experience": form.get("work_experience", "no") == "yes",
-                    "hackathons": int(form.get("hackathons", 0)),
-                    "certifications_count": int(form.get("certifications_count", 1)),
+                    "hackathons": safe_int(form.get("hackathons"), 0),
+                    "certifications_count": safe_int(form.get("certifications_count"), 1),
                     "open_source": form.get("open_source", "no") == "yes"
                 },
                 "work_preferences": {

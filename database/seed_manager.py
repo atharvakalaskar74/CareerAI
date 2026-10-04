@@ -20,10 +20,18 @@ def execute_sql_file(filepath):
     # Simple split on ';' followed by newline or EOF
     statements = [stmt.strip() for stmt in content.split(";") if stmt.strip()]
     
+    is_mysql = False
+    try:
+        is_mysql = db.engine.dialect.name == "mysql"
+    except Exception:
+        pass
+
     for stmt in statements:
         # Ignore comments-only statements
         clean_stmt = "\n".join([line for line in stmt.splitlines() if not line.strip().startswith("--")])
         if clean_stmt.strip():
+            if is_mysql:
+                clean_stmt = re.sub(r'INSERT\s+OR\s+IGNORE\s+INTO', 'INSERT IGNORE INTO', clean_stmt, flags=re.IGNORECASE)
             try:
                 db.session.execute(text(clean_stmt))
             except Exception as e:
