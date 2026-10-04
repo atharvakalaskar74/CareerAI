@@ -242,7 +242,80 @@ tests/test_skill_gap.py::test_skill_gap_calculation PASSED
 
 ---
 
-## 9. Ethical AI & Academic Considerations
+## 9. Local XAMPP MySQL Setup
+
+For local development with XAMPP MySQL:
+
+1. **Start Apache & MySQL** in the XAMPP Control Panel.
+2. Open phpMyAdmin (`http://localhost/phpmyadmin`) or MySQL terminal:
+   ```sql
+   CREATE DATABASE careerai_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+3. Set your environment variables in `.env`:
+   ```ini
+   FLASK_ENV=development
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_NAME=careerai_db
+   DB_USER=root
+   DB_PASSWORD=
+   ```
+   *(Or using full URI: `DATABASE_URL=mysql+pymysql://root:@localhost:3306/careerai_db`)*.
+4. Run the application:
+   ```bash
+   python app.py
+   ```
+   CareerAI will automatically detect the MySQL dialect, create all 23 relational tables, and load the realistic seed catalog.
+
+---
+
+## 10. Production Deployment (₹0 / Free Tier)
+
+CareerAI is engineered for zero-cost deployment on modern cloud platforms with zero GenAI API billing.
+
+### 10.1 Architecture
+- **Web App Server**: Render Free Web Service / Railway / Koyeb (Python 3.11+, Gunicorn WSGI)
+- **Cloud Database**: TiDB Serverless (MySQL 8.0 Compatible, 5 GB Free Tier) / Aiven MySQL / AlwaysData
+- **Cost**: **₹0.00 / month** (100% Free Tier compatible)
+
+### 10.2 Render Deployment Steps
+1. Push your repository to GitHub:
+   ```bash
+   git remote add origin https://github.com/<your-username>/CareerAI.git
+   git branch -M main
+   git push -u origin main
+   ```
+2. Log in to [Render](https://render.com) and click **New → Web Service**.
+3. Connect your GitHub repository.
+4. Configure service settings:
+   - **Environment**: `Python`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn "app:create_app()"`
+   - **Plan**: `Free`
+5. Set Environment Variables:
+   - `FLASK_ENV`: `production`
+   - `SECRET_KEY`: *(Generate a 32-character random string)*
+   - `SESSION_COOKIE_SECURE`: `true`
+   - `DATABASE_URL`: *(Your free TiDB Serverless or Aiven MySQL connection string, e.g., `mysql+pymysql://<user>:<pass>@<host>:4000/<db>?ssl_verify_cert=true`)*
+6. Click **Deploy Web Service**.
+7. Once deployed, verify your live URL at: `https://<your-subdomain>.onrender.com/health`.
+
+### 10.3 Health Monitoring Endpoint
+- **URL**: `GET /health`
+- **Response Format**:
+  ```json
+  {
+    "status": "healthy",
+    "service": "CareerAI — Intelligent Career Recommendation Engine",
+    "database": "connected",
+    "ml_engine": "ready",
+    "environment": "production"
+  }
+  ```
+
+---
+
+## 11. Ethical AI & Academic Considerations
 
 1. **Non-Deterministic Advisory**: Recommendations are decision-support indicators reflecting mathematical similarity to historical benchmarks. CareerAI never guarantees employment.
 2. **Neutrality & Privacy**: Demographic, gender, or protected personal characteristics are strictly excluded from the ML feature vector.
@@ -250,6 +323,7 @@ tests/test_skill_gap.py::test_skill_gap_calculation PASSED
 
 ---
 
-## 10. License
+## 12. License
 
 Developed for educational and academic capstone evaluation under the MIT License.
+
